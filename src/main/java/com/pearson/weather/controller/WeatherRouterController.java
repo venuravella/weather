@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pearson.weather.constant.WeatherUrlConstants;
 import com.pearson.weather.entity.City;
 import com.pearson.weather.handler.WeatherManager;
+import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -22,6 +23,7 @@ import static org.springframework.web.reactive.function.server.RouterFunctions.*
 /**
  * All  end points are exposed here.
  */
+@Api(tags = "Weather API")
 @Slf4j
 @Configuration
 public class WeatherRouterController {

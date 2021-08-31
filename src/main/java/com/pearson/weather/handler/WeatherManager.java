@@ -14,7 +14,7 @@ public class WeatherManager {
     private CityService cityService;
 
     public Mono<City> getCity(String cityName, String countryName) {
-        return cityService.getByCity(cityName, countryName);
+        return cityService.getByCity(cityName,  countryName);
     }
 
     public Flux<City> getCities() {
