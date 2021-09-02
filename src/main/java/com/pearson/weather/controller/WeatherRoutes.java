@@ -3,30 +3,29 @@ package com.pearson.weather.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import com.pearson.weather.constant.WeatherUrlConstants;
+import com.pearson.weather.constant.WeatherUrlConstants.UrlConstants;
 import com.pearson.weather.entity.City;
 import com.pearson.weather.handler.WeatherManager;
+import com.pearson.weather.repository.CityRepository;
 import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import static org.springframework.web.reactive.function.server.RequestPredicates.*;
-
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerResponse;
 
-import static org.springframework.web.reactive.function.server.RouterFunctions.*;
+import static org.springdoc.webflux.core.fn.SpringdocRouteBuilder.route;
 
 
 /**
- * All  end points are exposed here.
+ * All weather realted end points are exposed here.
  */
 @Api(tags = "Weather API")
 @Slf4j
 @Configuration
-public class WeatherRouterController {
+public class WeatherRoutes {
 
   @Autowired
   private WeatherManager weatherManager;
@@ -37,17 +36,23 @@ public class WeatherRouterController {
    * @return
    */
   @Bean
-  public RouterFunction<ServerResponse> initWeatherRoutes() {
-    return route(GET(WeatherUrlConstants.UrlConstants.FETCH_CITY.getValue()),
+  public RouterFunction<ServerResponse> initRoutes() {
+    return route().GET(UrlConstants.FETCH_CITY.getValue(),
         request -> ServerResponse.ok()
             .body(weatherManager.getCity(request.pathVariable("cityName"),
-                request.pathVariable("countryName")), City.class))
+                request.pathVariable("countryName")), City.class),
+        ops -> ops.operationId("Fetch specific city")
+            .beanClass(CityRepository.class)
+            .beanMethod("getCityByID"))
 
-        .and(route(GET(WeatherUrlConstants.UrlConstants.GET_CITIES.getValue()),
+        .GET(UrlConstants.GET_CITIES.getValue(),
             request -> ServerResponse.ok()
-                .body(weatherManager.getCities(), City.class)))
+                .body(weatherManager.getCities(), City.class),
+            ops -> ops.operationId("Fetch all city")
+                .beanClass(CityRepository.class)
+                .beanMethod("getAllCity"))
 
-        .and(route(POST(WeatherUrlConstants.UrlConstants.ADD_CITY.getValue()),
+        .POST(UrlConstants.ADD_CITY.getValue(),
             request -> {
               try {
                 return ServerResponse.ok()
@@ -59,12 +64,19 @@ public class WeatherRouterController {
                 e.printStackTrace();
                 return null;
               }
-            }))
+            },
+            ops -> ops.operationId("Add city").beanClass(CityRepository.class).beanMethod("save"))
 
-        .and(route(DELETE(WeatherUrlConstants.UrlConstants.DELETE_CITY.getValue()),
+        .DELETE(UrlConstants.DELETE_CITY.getValue(),
             request -> ServerResponse.ok()
                 .body(weatherManager.deleteCity(request.pathVariable("cityName")),
-                    String.class)));
+                    String.class),
+            ops -> ops.operationId("Delete city")
+                .beanClass(CityRepository.class)
+                .beanMethod("deleteCityByID"))
+
+        .build();
+
   }
 
 }
